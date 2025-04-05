@@ -1,6 +1,6 @@
 <template>
   <main class="container">
-    <h1>Run Goals</h1>
+    <h1>RunMetrics</h1>
     <RunInputForm v-model:miles="milesRun" />
     <RunStats :miles-run="milesRun" />
   </main>
