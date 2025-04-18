@@ -1,17 +1,25 @@
 <template>
   <main class="container">
     <h1>RunMetrics</h1>
-    <RunInputForm v-model:miles="milesRun" />
-    <RunStats :miles-run="milesRun" />
+    <RunInputForm v-model:miles="milesRun" v-model:goal="runningGoal" />
+    <RunStats :miles-run="milesRun" :goal="runningGoal" />
   </main>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import RunInputForm from './components/RunInputForm.vue';
 import RunStats from './components/RunStats.vue';
 
 const milesRun = ref<number | null>(null);
+const runningGoal = ref<number | null>(null);
+
+onMounted(() => {
+  const savedGoal = localStorage.getItem('runningGoal');
+  if (savedGoal) {
+    runningGoal.value = parseInt(savedGoal);
+  }
+});
 </script>
 
 <style>
