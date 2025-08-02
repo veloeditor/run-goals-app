@@ -8,14 +8,19 @@
         <!-- First row: Total Miles and Yearly Goal Progress -->
         <div class="stat-card">
           <h3>Total Miles</h3>
-          <p class="stat-value">{{ milesRun.toFixed(1) }}</p>
+          <p class="stat-value">{{ milesRun?.toFixed(1) || '0.0' }}</p>
           <p class="stat-label">miles run this year</p>
         </div>
         
         <div v-if="goal" class="stat-card">
           <h3>Goal Progress</h3>
-          <p class="stat-value">{{ goalProgress }}%</p>
-          <p class="stat-label">{{ milesRun.toFixed(1) }} / {{ goal }} miles</p>
+          <div class="goal-progress-container">
+            <div class="goal-progress-text">
+              <p class="stat-value">{{ goalProgress }}%</p>
+              <p class="stat-label">{{ milesRun?.toFixed(1) || '0.0' }} / {{ goal }} miles</p>
+            </div>
+            <GoalProgressChart :current-miles="milesRun" :goal-miles="goal" />
+          </div>
         </div>
 
         <!-- Second row: Average Miles Per Day and Projected Year-End -->
@@ -44,6 +49,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import GoalProgressChart from './GoalProgressChart.vue';
 
 const props = defineProps<{
   milesRun: number | null;
@@ -147,6 +153,26 @@ const restDaysText = computed(() => {
   margin: 0;
 }
 
+.goal-progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.goal-progress-text {
+  flex: 1;
+  text-align: left;
+}
+
+.goal-progress-text .stat-value {
+  margin-bottom: 0.2125rem;
+}
+
+.goal-progress-text .stat-label {
+  margin: 0;
+}
+
 .rest-days-card {
   background-color: #e8f5e9;
   color: #2e7d32;
@@ -173,6 +199,15 @@ const restDaysText = computed(() => {
   
   .stat-card h3 {
     font-size: 0.85rem;
+  }
+  
+  .goal-progress-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .goal-progress-text {
+    text-align: center;
   }
 }
 
