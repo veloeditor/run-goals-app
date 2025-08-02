@@ -2,17 +2,41 @@
   <div v-if="milesRun !== null" class="run-stats">
     <article>
       <header>
-        <h2>Your Running Statistics</h2>
+        <h2 class="stats-header">Your Running Statistics</h2>
       </header>
-      <div class="stats-content">
-        <p><strong>Total Miles Run This Year:</strong> {{ milesRun.toFixed(1) }}</p>
-        <p v-if="goal"><strong>Yearly Goal Progress:</strong> {{ goalProgress }}% ({{ milesRun.toFixed(1) }} / {{ goal
-        }} miles)</p>
-        <p><strong>Average Miles Per Day:</strong> {{ averageMilesPerDay.toFixed(2) }}</p>
-        <p><strong>Projected Year-End Total:</strong> {{ projectedYearEnd.toFixed(1) }}</p>
-        <p v-if="goal && projectedYearEnd >= goal" class="rest-days">
-          <strong>You could take off:</strong> {{ restDaysText }}
-        </p>
+      <div class="stats-grid">
+        <!-- First row: Total Miles and Yearly Goal Progress -->
+        <div class="stat-card">
+          <h3>Total Miles</h3>
+          <p class="stat-value">{{ milesRun.toFixed(1) }}</p>
+          <p class="stat-label">miles run this year</p>
+        </div>
+        
+        <div v-if="goal" class="stat-card">
+          <h3>Goal Progress</h3>
+          <p class="stat-value">{{ goalProgress }}%</p>
+          <p class="stat-label">{{ milesRun.toFixed(1) }} / {{ goal }} miles</p>
+        </div>
+
+        <!-- Second row: Average Miles Per Day and Projected Year-End -->
+        <div class="stat-card">
+          <h3>Daily Average</h3>
+          <p class="stat-value">{{ averageMilesPerDay.toFixed(2) }}</p>
+          <p class="stat-label">miles per day</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Projected Total</h3>
+          <p class="stat-value">{{ projectedYearEnd.toFixed(1) }}</p>
+          <p class="stat-label">miles by year end</p>
+        </div>
+
+        <!-- Third row: Rest Days (if applicable) -->
+        <div v-if="goal && projectedYearEnd >= goal" class="stat-card rest-days-card">
+          <h3>Rest Days Available</h3>
+          <p class="stat-value">{{ restDaysText }}</p>
+          <p class="stat-label">you could take off</p>
+        </div>
       </div>
     </article>
   </div>
@@ -72,22 +96,89 @@ const restDaysText = computed(() => {
 
 <style scoped>
 .run-stats {
-  max-width: 600px;
+  max-width: 740px;
   margin: 0 auto;
 }
 
-.stats-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.42rem;
-}
-
-article {
-  padding: 1.5rem;
-}
-
-.rest-days {
-  color: #4CAF50;
+.stats-header {
+  font-size: 1.4rem;
   font-weight: bold;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.stat-card {
+  background-color: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card h3 {
+  margin-top: 0;
+  margin-bottom: 0.425rem;
+  color: #333;
+  font-size: 0.935rem;
+}
+
+.stat-value {
+  font-size: 2.125rem;
+  font-weight: bold;
+  color: #4CAF50;
+  margin-bottom: 0.2125rem;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.765rem;
+  color: #666;
+  margin: 0;
+}
+
+.rest-days-card {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.rest-days-card .stat-value {
+  color: #2e7d32;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.64rem;
+  }
+  
+  .stat-card {
+    padding: 1.0625rem;
+  }
+  
+  .stat-value {
+    font-size: 1.7rem;
+  }
+  
+  .stat-card h3 {
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>
