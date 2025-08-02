@@ -79,7 +79,7 @@ watch(() => props.goal, (newValue) => {
 
 <style scoped>
 .run-input-form {
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .goal-section {
@@ -101,6 +101,10 @@ watch(() => props.goal, (newValue) => {
 
 input {
   margin-top: 0.5rem;
+}
+
+#miles-run {
+  width: 200px;
 }
 
 button {
