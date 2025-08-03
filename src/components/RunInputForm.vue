@@ -17,12 +17,12 @@
     </div>
 
     <label for="miles-run">Enter your total miles run this year:</label>
-    <input type="number" id="miles-run" v-model="milesRun" placeholder="Enter miles" @input="updateMiles">
+    <input type="number" id="miles-run" v-model="milesRun" placeholder="Enter miles" @input="debouncedUpdateMiles" @change="updateMiles">
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onUnmounted } from 'vue';
 
 const props = defineProps<{
   miles: number | null;
@@ -34,14 +34,27 @@ const emit = defineEmits<{
   (e: 'update:goal', value: number | null): void;
 }>();
 
-const milesRun = ref<number | null | string>(null);
+const milesRun = ref<number | null | string>(props.miles || '');
 const goalMiles = ref<number | null>(null);
 const storedGoal = ref<number | null>(null);
+let updateTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const updateMiles = () => {
   // Convert empty string to null, otherwise convert to number
   const value = milesRun.value === '' ? null : Number(milesRun.value);
   emit('update:miles', value);
+};
+
+const debouncedUpdateMiles = () => {
+  // Clear any existing timeout
+  if (updateTimeout) {
+    clearTimeout(updateTimeout);
+  }
+  
+  // Set a new timeout to update after 150ms of no typing
+  updateTimeout = setTimeout(() => {
+    updateMiles();
+  }, 150);
 };
 
 const saveGoal = () => {
@@ -67,9 +80,15 @@ onMounted(() => {
   }
 });
 
+onUnmounted(() => {
+  if (updateTimeout) {
+    clearTimeout(updateTimeout);
+  }
+});
+
 // Sync with parent component
 watch(() => props.miles, (newValue) => {
-  milesRun.value = newValue;
+  milesRun.value = newValue || '';
 });
 
 watch(() => props.goal, (newValue) => {
