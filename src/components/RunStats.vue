@@ -36,11 +36,18 @@
           <p class="stat-label">miles by year end</p>
         </div>
 
-        <!-- Third row: Rest Days (if applicable) -->
-        <div v-if="goal && projectedYearEnd >= goal" class="stat-card rest-days-card">
+        <!-- Third row: Rest Days or Warning -->
+        <div v-if="goal && !isBehindSchedule && projectedYearEnd >= goal" class="stat-card rest-days-card">
           <h3>Rest Days Available</h3>
           <p class="stat-value">{{ restDaysText }}</p>
           <p class="stat-label">you could take off</p>
+        </div>
+        
+        <!-- Warning card when behind schedule -->
+        <div v-if="goal && isBehindSchedule" class="stat-card warning-card">
+          <h3>Goal Status</h3>
+          <p class="stat-value">{{ projectedYearEnd.toFixed(1) }}</p>
+          <p class="stat-label">projected year end (goal: {{ goal }})</p>
         </div>
       </div>
     </article>
@@ -97,6 +104,18 @@ const restDaysText = computed(() => {
     const weeks = (possibleRestDays / 7).toFixed(1);
     return `${weeks} week${weeks === '1.0' ? '' : 's'}`;
   }
+});
+
+const isBehindSchedule = computed(() => {
+  if (!props.goal || !props.milesRun) return false;
+  
+  const remainingDays = daysInYear - daysSoFar.value;
+  const remainingMiles = props.goal - props.milesRun;
+  const requiredDailyMiles = remainingMiles / remainingDays;
+  const currentDailyMiles = props.milesRun / daysSoFar.value;
+  
+  // If we need more miles per day than we're currently averaging, we're behind
+  return currentDailyMiles < requiredDailyMiles;
 });
 </script>
 
@@ -180,6 +199,15 @@ const restDaysText = computed(() => {
 
 .rest-days-card .stat-value {
   color: #2e7d32;
+}
+
+.warning-card {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.warning-card .stat-value {
+  color: #856404;
 }
 
 /* Mobile responsiveness */
