@@ -8,14 +8,19 @@
         <!-- First row: Total Miles and Yearly Goal Progress -->
         <div class="stat-card">
           <h3>Total Miles</h3>
-          <p class="stat-value">{{ milesRun.toFixed(1) }}</p>
+          <p class="stat-value">{{ milesRun?.toFixed(1) || '0.0' }}</p>
           <p class="stat-label">miles run this year</p>
         </div>
         
         <div v-if="goal" class="stat-card">
           <h3>Goal Progress</h3>
-          <p class="stat-value">{{ goalProgress }}%</p>
-          <p class="stat-label">{{ milesRun.toFixed(1) }} / {{ goal }} miles</p>
+          <div class="goal-progress-container">
+            <div class="goal-progress-text">
+              <p class="stat-value">{{ goalProgress }}%</p>
+              <p class="stat-label">{{ milesRun?.toFixed(1) || '0.0' }} / {{ goal }} miles</p>
+            </div>
+            <GoalProgressChart :current-miles="milesRun" :goal-miles="goal" />
+          </div>
         </div>
 
         <!-- Second row: Average Miles Per Day and Projected Year-End -->
@@ -31,11 +36,18 @@
           <p class="stat-label">miles by year end</p>
         </div>
 
-        <!-- Third row: Rest Days (if applicable) -->
-        <div v-if="goal && projectedYearEnd >= goal" class="stat-card rest-days-card">
+        <!-- Third row: Rest Days or Warning -->
+        <div v-if="goal && !isBehindSchedule && projectedYearEnd >= goal" class="stat-card rest-days-card">
           <h3>Rest Days Available</h3>
           <p class="stat-value">{{ restDaysText }}</p>
           <p class="stat-label">you could take off</p>
+        </div>
+        
+        <!-- Warning card when behind schedule -->
+        <div v-if="goal && isBehindSchedule" class="stat-card warning-card">
+          <h3>Goal Status</h3>
+          <p class="stat-value">{{ projectedYearEnd.toFixed(1) }}</p>
+          <p class="stat-label">projected year end (goal: {{ goal }})</p>
         </div>
       </div>
     </article>
@@ -44,6 +56,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import GoalProgressChart from './GoalProgressChart.vue';
 
 const props = defineProps<{
   milesRun: number | null;
@@ -91,6 +104,18 @@ const restDaysText = computed(() => {
     const weeks = (possibleRestDays / 7).toFixed(1);
     return `${weeks} week${weeks === '1.0' ? '' : 's'}`;
   }
+});
+
+const isBehindSchedule = computed(() => {
+  if (!props.goal || !props.milesRun) return false;
+  
+  const remainingDays = daysInYear - daysSoFar.value;
+  const remainingMiles = props.goal - props.milesRun;
+  const requiredDailyMiles = remainingMiles / remainingDays;
+  const currentDailyMiles = props.milesRun / daysSoFar.value;
+  
+  // If we need more miles per day than we're currently averaging, we're behind
+  return currentDailyMiles < requiredDailyMiles;
 });
 </script>
 
@@ -147,6 +172,26 @@ const restDaysText = computed(() => {
   margin: 0;
 }
 
+.goal-progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.goal-progress-text {
+  flex: 1;
+  text-align: left;
+}
+
+.goal-progress-text .stat-value {
+  margin-bottom: 0.2125rem;
+}
+
+.goal-progress-text .stat-label {
+  margin: 0;
+}
+
 .rest-days-card {
   background-color: #e8f5e9;
   color: #2e7d32;
@@ -154,6 +199,15 @@ const restDaysText = computed(() => {
 
 .rest-days-card .stat-value {
   color: #2e7d32;
+}
+
+.warning-card {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.warning-card .stat-value {
+  color: #856404;
 }
 
 /* Mobile responsiveness */
@@ -173,6 +227,15 @@ const restDaysText = computed(() => {
   
   .stat-card h3 {
     font-size: 0.85rem;
+  }
+  
+  .goal-progress-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .goal-progress-text {
+    text-align: center;
   }
 }
 

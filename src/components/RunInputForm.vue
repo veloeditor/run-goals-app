@@ -34,12 +34,14 @@ const emit = defineEmits<{
   (e: 'update:goal', value: number | null): void;
 }>();
 
-const milesRun = ref<number | null>(null);
+const milesRun = ref<number | null | string>(null);
 const goalMiles = ref<number | null>(null);
 const storedGoal = ref<number | null>(null);
 
 const updateMiles = () => {
-  emit('update:miles', milesRun.value);
+  // Convert empty string to null, otherwise convert to number
+  const value = milesRun.value === '' ? null : Number(milesRun.value);
+  emit('update:miles', value);
 };
 
 const saveGoal = () => {
