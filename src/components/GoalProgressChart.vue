@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue';
+import { ref, watch, onUnmounted, nextTick } from 'vue';
 import { Chart, ArcElement, Tooltip, Legend, DoughnutController } from 'chart.js';
 
 // Register Chart.js components
@@ -21,7 +21,6 @@ let chart: Chart | null = null;
 
 const createChart = () => {
   if (!chartCanvas.value) {
-    console.log('Canvas ref not available');
     return;
   }
 
@@ -85,27 +84,13 @@ const createChart = () => {
 };
 
 const updateChart = () => {
-  if (!chart) {
-    return;
+  // Always recreate the chart for reliable updates
+  if (chart) {
+    chart.destroy();
+    chart = null;
   }
-
-  // Don't update if we don't have valid data
-  if (props.currentMiles === null || props.goalMiles === null || props.goalMiles <= 0) {
-    return;
-  }
-
-  let progress = Math.min((props.currentMiles / props.goalMiles) * 100, 100);
-  let remaining = Math.max(100 - progress, 0);
-
-  chart.data.datasets[0].data = [progress, remaining];
-  chart.update('none');
+  createChart();
 };
-
-onMounted(() => {
-  nextTick(() => {
-    createChart();
-  });
-});
 
 onUnmounted(() => {
   if (chart) {
@@ -115,12 +100,20 @@ onUnmounted(() => {
 });
 
 watch(() => [props.currentMiles, props.goalMiles], () => {
-  if (chart) {
+  nextTick(() => {
+    // Destroy chart if data becomes invalid
+    if (props.currentMiles === null || props.goalMiles === null || props.goalMiles <= 0) {
+      if (chart) {
+        chart.destroy();
+        chart = null;
+      }
+      return;
+    }
+    
+    // Always recreate the chart for reliable updates
     updateChart();
-  } else {
-    createChart();
-  }
-}, { deep: true });
+  });
+}, { deep: true, immediate: true });
 </script>
 
 <style scoped>
