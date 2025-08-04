@@ -92,8 +92,6 @@ const updateChart = () => {
   createChart();
 };
 
-
-
 onUnmounted(() => {
   if (chart) {
     chart.destroy();
